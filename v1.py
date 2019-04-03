@@ -20,24 +20,37 @@ def calc_commission_rate(x):
     else:
         return .04
 
-
 print(calc_commission_rate.__doc__)
+
+def randomPctTarget(reps, std, pct_avg, sales_target_vals, sales_target_prob):
+    pct_target = np.random.normal(avg, std_dev, num_reps).round(2)
+    sales_target = np.random.choice(sales_target_values, num_reps, p=sales_target_prob)
+
+    return pct_target, sales_target
+
+
+def designDFrame(pct, sales, reps):
+    Df = pd.DataFrame(index=range(reps), data={'Pct_To_Target': pct,
+                                               'Sales_Target': sales})
+
+    Df['Sales'] = Df['Pct_To_Target'] * Df['Sales_Target']
+    Df['Commission_Rate'] = Df['Pct_To_Target'].apply(calc_commission_rate)
+    Df['Commission_Amount'] = Df['Commission_Rate'] * Df['Sales']
+    return Df
+
 
 avg = 1
 std_dev = .1
 num_reps = 500
 num_simulations = 1000
-
-pct_to_target = np.random.normal(avg, std_dev, num_reps).round(2)
-
 sales_target_values = [75000, 100000, 200000, 300000, 400000, 500000]
 sales_target_prob = [.3, .3, .2, .1, .05, .05]
 
-sales_target = np.random.choice(sales_target_values, num_reps, p=sales_target_prob)
 
-df = pd.DataFrame(index=range(num_reps), data={'Pct_To_Target': pct_to_target,
-                                               'Sales_Target': sales_target})
 
-df['Sales'] = df['Pct_To_Target'] * df['Sales_Target']
-df['Commission_Rate'] = df['Pct_To_Target'].apply(calc_commission_rate)
-df['Commission_Amount'] = df['Commission_Rate'] * df['Sales']
+pct_to_target, sales_target = randomPctTarget(reps=num_reps, std=std_dev, pct_avg=avg,
+                                              sales_target_vals=sales_target_values,
+                                              sales_target_prob=sales_target_prob)
+
+df = designDFrame(pct=pct_to_target, sales=sales_target)
+
